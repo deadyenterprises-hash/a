@@ -1,9 +1,9 @@
 name: Dispatch Preflight
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
   schedule:
-    - cron: "*/10 * * * *"  # every 10 minutes (UTC)
+    - cron: "*/10 * * * *"
 
 jobs:
   ping:
@@ -11,22 +11,11 @@ jobs:
     steps:
       - name: Call dispatch_preflight
         env:
-          SUPABASE_DISPATCH_PREFLIGHT_URL: ${{ secrets.SUPABASE_DISPATCH_PREFLIGHT_URL }}
+          URL: ${{ secrets.SUPABASE_DISPATCH_PREFLIGHT_URL }}
           DISPATCH_SECRET: ${{ secrets.DISPATCH_SECRET }}
         run: |
           set -euo pipefail
-
-          echo "SUPABASE_DISPATCH_PREFLIGHT_URL repr:"
-          python3 - <<'PY'
-          import os
-          print(repr(os.environ.get("SUPABASE_DISPATCH_PREFLIGHT_URL","")))
-          PY
-
-          curl -sS -X POST "${SUPABASE_DISPATCH_PREFLIGHT_URL}" \
-            -H "content-type: application/json" \
-            -H "x-dispatch-secret: ${DISPATCH_SECRET}" \
-            -d '{"limit":10}' \
-            -o response.json \
-            -w "\nHTTP %{http_code}\n"
-
-          cat response.json
+          curl -sS -X POST "$URL" \
+            -H "Content-Type: application/json" \
+            -H "x-dispatch-secret: $DISPATCH_SECRET" \
+            -d '{"limit":10}'
