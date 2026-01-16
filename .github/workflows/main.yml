@@ -19,3 +19,10 @@ jobs:
             -H "Content-Type: application/json" \
             -H "x-dispatch-secret: $DISPATCH_SECRET" \
             -d '{"limit":10}'
+      - name: Reconcile stuck runs
+        if: always()
+        run: |
+          curl -sS -X POST "${{ secrets.SUPABASE_RECONCILE_URL }}" \
+            -H "Content-Type: application/json" \
+            -H "x-dispatch-secret: ${{ secrets.DISPATCH_SECRET }}" \
+            -d '{"limit":50,"older_than_minutes":10}'
