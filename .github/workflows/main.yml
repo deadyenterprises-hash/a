@@ -1,26 +1,33 @@
+name: Dispatch Preflight
+
+'on':
+  workflow_dispatch:
+  schedule:
+    - cron: "*/10 * * * *"
+
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
       - name: Call dispatch_preflight
         env:
-          URL: ${{ secrets.SUPABASE_DISPATCH_PREFLIGHT_URL }}
+          DISPATCH_URL: ${{ secrets.SUPABASE_DISPATCH_PREFLIGHT_URL }}
           DISPATCH_SECRET: ${{ secrets.DISPATCH_SECRET }}
         run: |
           set -euo pipefail
 
-          if [ -z "${URL:-}" ]; then
-            echo "::error::SUPABASE_DISPATCH_PREFLIGHT_URL secret is missing/empty"
+          if [ -z "${DISPATCH_URL:-}" ]; then
+            echo "::error::Missing SUPABASE_DISPATCH_PREFLIGHT_URL secret"
             exit 1
           fi
           if [ -z "${DISPATCH_SECRET:-}" ]; then
-            echo "::error::DISPATCH_SECRET secret is missing/empty"
+            echo "::error::Missing DISPATCH_SECRET secret"
             exit 1
           fi
 
           echo "Calling dispatch_preflight..."
           RESP="$(mktemp)"
-          CODE="$(curl -sS -o "$RESP" -w "%{http_code}" -X POST "$URL" \
+          CODE="$(curl -sS -o "$RESP" -w "%{http_code}" -X POST "$DISPATCH_URL" \
             -H "Content-Type: application/json" \
             -H "x-dispatch-secret: $DISPATCH_SECRET" \
             -d '{"limit":10}')"
@@ -43,7 +50,7 @@ jobs:
           set -euo pipefail
 
           if [ -z "${RECON_URL:-}" ]; then
-            echo "::error::SUPABASE_RECONCILE_URL secret is missing/empty"
+            echo "::error::Missing SUPABASE_RECONCILE_URL secret"
             exit 1
           fi
 
